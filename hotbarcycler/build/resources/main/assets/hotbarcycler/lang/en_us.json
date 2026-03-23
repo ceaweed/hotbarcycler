@@ -1,0 +1,11 @@
+{
+  "key.categories.hotbarcycler.hotbarcycler": "Hotbar Cycler",
+  "key.hotbarcycler.next":                    "Next Hotbar Row",
+  "key.hotbarcycler.prev":                    "Previous Hotbar Row",
+  "key.hotbarcycler.column_next":             "Column: Rotate Up",
+  "key.hotbarcycler.column_prev":             "Column: Rotate Down",
+  "key.hotbarcycler.open_settings":           "Open Settings",
+  "key.hotbarcycler.toggle_column_preview":   "Toggle Column Preview",
+  "key.hotbarcycler.toggle_row_indicator":    "Toggle Row Indicator",
+  "key.hotbarcycler.toggle_inventory_overlay":"Toggle Inventory Overlay"
+}
