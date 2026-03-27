@@ -5,13 +5,33 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
+import net.minecraft.screen.slot.SlotActionType;
 
 public class HotbarCyclerClient implements ClientModInitializer {
 
     private static final String CATEGORY = "key.categories.hotbarcycler";
+
+    /**
+     * PlayerScreenHandler screen-slot offsets for each inventory section.
+     *
+     * The player screen handler lays out slots as:
+     *   0       = crafting result
+     *   1-4     = crafting grid
+     *   5-8     = armor
+     *   9-35    = main inventory rows 1-3  (PlayerInventory.main[9..35])
+     *   36-44   = hotbar                  (PlayerInventory.main[0..8])
+     *   45      = offhand
+     *
+     * SlotActionType.SWAP with button 0-8 swaps slotId ↔ hotbar[button].
+     * Three such swaps chain-cycle the four rows with zero stacking risk.
+     */
+    private static final int HOTBAR = 36;  // unused directly but kept for clarity
+    private static final int ROW1   = 9;
+    private static final int ROW2   = 18;
+    private static final int ROW3   = 27;
 
     private static KeyBinding nextHotbarKey;
     private static KeyBinding prevHotbarKey;
@@ -64,22 +84,80 @@ public class HotbarCyclerClient implements ClientModInitializer {
             while (toggleInventoryOverlayKey.wasPressed())
                 inventoryOverlayVisible = !inventoryOverlayVisible;
 
-            // ── send() now takes (Identifier, PacketByteBuf) ──────────────
             while (nextHotbarKey.wasPressed()) {
-                ClientPlayNetworking.send(CycleHotbarPayload.ID, CycleHotbarPayload.encode(true));
+                rotateRows(client, true);
                 currentPage = (currentPage + 1) % 4;
             }
             while (prevHotbarKey.wasPressed()) {
-                ClientPlayNetworking.send(CycleHotbarPayload.ID, CycleHotbarPayload.encode(false));
+                rotateRows(client, false);
                 currentPage = (currentPage - 1 + 4) % 4;
             }
 
             int sel = client.player.getInventory().selectedSlot;
             while (nextColumnKey.wasPressed())
-                ClientPlayNetworking.send(CycleColumnPayload.ID, CycleColumnPayload.encode(sel, true));
+                rotateColumn(client, sel, true);
             while (prevColumnKey.wasPressed())
-                ClientPlayNetworking.send(CycleColumnPayload.ID, CycleColumnPayload.encode(sel, false));
+                rotateColumn(client, sel, false);
         });
+    }
+
+    /**
+     * Rotates all 9 inventory columns by one row.
+     *
+     * Uses SlotActionType.SWAP: clickSlot(syncId, slotId, button=col, SWAP, player)
+     * swaps the item at screen slot [slotId] with hotbar slot [col].
+     *
+     * next=true  (↑): hotbar ← row1 ← row2 ← row3 ← old hotbar
+     *   swap(row3[c], c) → hotbar[c]=row3, row3[c]=hotbar
+     *   swap(row2[c], c) → hotbar[c]=row2, row2[c]=old row3 ✓
+     *   swap(row1[c], c) → hotbar[c]=row1 ✓, row1[c]=old row2 ✓
+     *   result: hotbar=row1, row1=row2, row2=row3, row3=old hotbar ✓
+     *
+     * next=false (↓): hotbar ← row3 ← row2 ← row1 ← old hotbar
+     *   swap(row1[c], c) → hotbar[c]=row1, row1[c]=hotbar
+     *   swap(row2[c], c) → hotbar[c]=row2, row2[c]=old row1 ✓
+     *   swap(row3[c], c) → hotbar[c]=row3 ✓, row3[c]=old row2 ✓
+     *   result: hotbar=row3, row3=row2, row2=row1, row1=old hotbar ✓
+     */
+    private static void rotateRows(MinecraftClient client, boolean next) {
+        int syncId = client.player.playerScreenHandler.syncId;
+        for (int c = 0; c < 9; c++) {
+            if (next) {
+                swap(client, syncId, ROW3 + c, c);
+                swap(client, syncId, ROW2 + c, c);
+                swap(client, syncId, ROW1 + c, c);
+            } else {
+                swap(client, syncId, ROW1 + c, c);
+                swap(client, syncId, ROW2 + c, c);
+                swap(client, syncId, ROW3 + c, c);
+            }
+        }
+    }
+
+    /**
+     * Rotates a single inventory column (same SWAP chain, one column only).
+     */
+    private static void rotateColumn(MinecraftClient client, int col, boolean next) {
+        int syncId = client.player.playerScreenHandler.syncId;
+        if (next) {
+            swap(client, syncId, ROW3 + col, col);
+            swap(client, syncId, ROW2 + col, col);
+            swap(client, syncId, ROW1 + col, col);
+        } else {
+            swap(client, syncId, ROW1 + col, col);
+            swap(client, syncId, ROW2 + col, col);
+            swap(client, syncId, ROW3 + col, col);
+        }
+    }
+
+    /**
+     * Fires a SWAP click: swaps screen slot [slotId] with hotbar slot [hotbarIndex].
+     * clickSlot() updates the client inventory immediately and sends a
+     * ClickSlotC2SPacket so the server stays in sync — no custom networking needed.
+     */
+    private static void swap(MinecraftClient client, int syncId, int slotId, int hotbarIndex) {
+        client.interactionManager.clickSlot(
+                syncId, slotId, hotbarIndex, SlotActionType.SWAP, client.player);
     }
 
     private static KeyBinding reg(String id) {
