@@ -1,4 +1,4 @@
-# Hotbar Cycler — Fabric Mod for Minecraft 1.21.10
+# Hotbar Cycler — Fabric Mod for Minecraft 1.21.11
 
 Cycle through all four rows of your player inventory as if each one were a hotbar, using two assignable keybindings.
 
