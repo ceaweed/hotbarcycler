@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "hotbarcycler",
-  "version": "1.0.0",
+  "version": "${version}",
   "name": "Hotbar Cycler",
   "description": "Cycle through your inventory rows as hotbars using assignable keybinds.",
   "authors": [],
