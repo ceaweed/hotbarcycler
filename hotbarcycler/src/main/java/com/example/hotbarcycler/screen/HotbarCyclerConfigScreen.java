@@ -241,7 +241,7 @@ public class HotbarCyclerConfigScreen extends Screen {
 
     @Override
     public void render(DrawContext ctx, int mouseX, int mouseY, float delta) {
-        renderBackground(ctx, mouseX, mouseY, delta);
+        renderBackground(ctx);
 
         // Draw title
         ctx.drawCenteredTextWithShadow(textRenderer, title, width / 2, 7, C_WHITE);
