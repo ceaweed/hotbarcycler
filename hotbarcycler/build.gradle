@@ -1,5 +1,5 @@
 plugins {
-    id 'fabric-loom' version '1.13-SNAPSHOT'
+    id 'fabric-loom' version '1.6.12'
     id 'maven-publish'
 }
 
@@ -25,7 +25,7 @@ dependencies {
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
     // ModMenu — optional at runtime; compile-only so the mod builds without it.
-    modCompileOnly "com.terraformersmc:modmenu:13.0.0"
+    modCompileOnly "com.terraformersmc:modmenu:11.0.1"
 }
 
 processResources {

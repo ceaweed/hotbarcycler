@@ -76,10 +76,10 @@ public abstract class InGameHudMixin {
     @Unique
     private void hotbarcycler$drawColumnPreview(DrawContext ctx, MinecraftClient client,
                                                 int sw, int sh, HotbarCyclerConfig cfg) {
-        int sel    = client.player.getInventory().getSelectedSlot();
-        ItemStack r1 = client.player.getInventory().getMainStacks().get(sel +  9);
-        ItemStack r2 = client.player.getInventory().getMainStacks().get(sel + 18);
-        ItemStack r3 = client.player.getInventory().getMainStacks().get(sel + 27);
+        int sel    = client.player.getInventory().selectedSlot;
+        ItemStack r1 = client.player.getInventory().getStack(sel +  9);
+        ItemStack r2 = client.player.getInventory().getStack(sel + 18);
+        ItemStack r3 = client.player.getInventory().getStack(sel + 27);
 
         if (r1.isEmpty() && r2.isEmpty() && r3.isEmpty() && !cfg.showEmptyColumns) return;
 
@@ -105,8 +105,7 @@ public abstract class InGameHudMixin {
                 int ix = x + (slotW - 16) / 2;
                 int iy = y + (slotH - 16) / 2;
                 ctx.drawItemWithoutEntity(stacks[i], ix, iy);
-                ctx.drawStackOverlay(client.textRenderer, stacks[i], ix, iy);
-            }
+                ctx.drawItemInSlot(client.textRenderer, stacks[i], x, y);            }
         }
     }
 
@@ -178,7 +177,7 @@ public abstract class InGameHudMixin {
             ctx.fill(panelX + pad, sepY, panelX + panelW - pad, sepY + 1, SEP_LINE);
         }
 
-        int sel = client.player.getInventory().getSelectedSlot();
+        int sel = client.player.getInventory().selectedSlot;
 
         // Inventory rows: slots 9-35, top=row1(9-17), mid=row2(18-26), bot=row3(27-35)
         for (int invSlot = 9; invSlot < 36; invSlot++) {
@@ -219,11 +218,12 @@ public abstract class InGameHudMixin {
         outline(ctx, x, y, slotSize, slotSize, edgeColor);
 
         // Item centred inside
-        ItemStack stack = client.player.getInventory().getMainStacks().get(slotIndex);
+        ItemStack stack = client.player.getInventory().getStack(slotIndex);
         if (!stack.isEmpty()) {
             ctx.drawItemWithoutEntity(stack, x + (slotSize - 16) / 2, y + (slotSize - 16) / 2);
-            ctx.drawStackOverlay(client.textRenderer, stack,
-                    x + (slotSize - 16) / 2, y + (slotSize - 16) / 2);
+//            ctx.(client.textRenderer, stack,
+//                    x + (slotSize - 16) / 2, y + (slotSize - 16) / 2);
+            ctx.drawItemInSlot(client.textRenderer, stack, x + (slotSize - 16) / 2, y + (slotSize - 16) / 2);
         }
     }
 }

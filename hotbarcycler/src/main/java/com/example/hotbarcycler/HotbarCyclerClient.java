@@ -12,8 +12,8 @@ import net.minecraft.util.Identifier;
 
 public class HotbarCyclerClient implements ClientModInitializer {
 
-    private static final KeyBinding.Category CATEGORY =
-            KeyBinding.Category.create(Identifier.of("hotbarcycler", "hotbarcycler"));
+    // 1.21.1 uses a plain String category (KeyBinding.Category.create was added in 1.21.9)
+    private static final String CATEGORY = "key.categories.hotbarcycler";
 
     // ── Keybindings ───────────────────────────────────────────────────────────
     private static KeyBinding nextHotbarKey;
@@ -101,7 +101,7 @@ public class HotbarCyclerClient implements ClientModInitializer {
                 currentPage = (currentPage - 1 + 4) % 4;
             }
 
-            int sel = client.player.getInventory().getSelectedSlot();
+            int sel = client.player.getInventory().selectedSlot;
             while (nextColumnKey.wasPressed()) {
                 ClientPlayNetworking.send(new CycleColumnPayload(sel, true));
             }
