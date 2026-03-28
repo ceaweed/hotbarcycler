@@ -9,10 +9,11 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.screen.slot.SlotActionType;
+import net.minecraft.util.Identifier;
 
 public class HotbarCyclerClient implements ClientModInitializer {
 
-    private static final String CATEGORY = "key.categories.hotbarcycler";
+    private static final KeyBinding.Category CATEGORY = KeyBinding.Category.create(Identifier.of("key.categories.hotbarcycler"));
 
     /**
      * PlayerScreenHandler screen-slot offsets for each inventory section.
@@ -93,7 +94,7 @@ public class HotbarCyclerClient implements ClientModInitializer {
                 currentPage = (currentPage - 1 + 4) % 4;
             }
 
-            int sel = client.player.getInventory().selectedSlot;
+            int sel = client.player.getInventory().getSelectedSlot();
             while (nextColumnKey.wasPressed())
                 rotateColumn(client, sel, true);
             while (prevColumnKey.wasPressed())
