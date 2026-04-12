@@ -241,13 +241,11 @@ public class HotbarCyclerConfigScreen extends Screen {
 
     @Override
     public void render(DrawContext ctx, int mouseX, int mouseY, float delta) {
-        renderBackground(ctx, mouseX, mouseY, delta);
+        // Draw widgets (buttons, fields)
+        super.render(ctx, mouseX, mouseY, delta);
 
         // Draw title
         ctx.drawCenteredTextWithShadow(textRenderer, title, width / 2, 7, C_WHITE);
-
-        // Draw widgets (buttons, fields)
-        super.render(ctx, mouseX, mouseY, delta);
 
         // Draw our labels LAST so they are never obscured by the background quad
         for (LabelEntry e : postLabels) {
